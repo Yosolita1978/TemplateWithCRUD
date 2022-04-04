@@ -5,7 +5,7 @@ Run your client, server and do a restart of your dump db to have a full-stack pr
 # Step by Step instructions - To use this project as your start point
 
 ### For create the whole project
-1. Go to your source directory in your terminal and run the command `git clone https://github.com/Yosolita1978/React-Express-PairProgramming.git NAMENEWDIRECTORY`
+1. Go to your source directory in your terminal and run the command `git clone https://github.com/Yosolita1978/TemplateWithCRUD.git NAMENEWDIRECTORY`
 ![You will something like this in your terminal.](https://github.com/Yosolita1978/screenshoots/blob/main/template/Screen%20Shot%202022-03-20%20at%207.50.46%20PM.png?raw=true)
 
 2. To restore the DB dump file that the project already contain, just run the command `psql -U postgres -f db.sql`. Make sure that you have your Postgres password on hand. The psql console will ask you for your password. 
