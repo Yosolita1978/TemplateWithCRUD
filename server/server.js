@@ -2,19 +2,45 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config()
+const fetch = require('node-fetch');
+const { auth } = require('express-openid-connect');
 const db = require('../server/db/db-connection.js'); 
 const REACT_BUILD_DIR = path.join(__dirname, '..', 'client', 'build');
 const app = express();
-app.use(express.static(REACT_BUILD_DIR));
 
-const PORT = process.env.PORT || 5000;
+
+const config = {
+    authRequired: false,
+    auth0Logout: true,
+    secret: process.env.SECRET,
+    baseURL: process.env.BASEURL,
+    clientID: process.env.CLIENTID,
+    issuerBaseURL: process.env.ISSUERBASEURL
+  };
+
+const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
+app.use(auth(config));
 
 //creates an endpoint for the route /api
 app.get('/', (req, res) => {
+    //console.log(req.oidc.isAuthenticated());
     res.sendFile(path.join(REACT_BUILD_DIR, 'index.html'));
 });
+
+//creates an endpoint for the route for the user authenticated
+app.get('/api/me', (req, res) => {
+    console.log(req.oidc.isAuthenticated());
+    if(req.oidc.isAuthenticated()){
+        console.log(req.oidc.user);
+        res.json(req.oidc.user);
+    } else{
+        res.status(401).json({error: "Error in the auth0"});
+    }
+});
+
+app.use(express.static(REACT_BUILD_DIR));
 
 //create the get request
 app.get('/api/students', cors(), async (req, res) => {
@@ -78,6 +104,28 @@ app.put('/api/students/:studentId', cors(), async (req, res) =>{
         return res.status(400).json({e});
     }
 });
+
+// Create the post request for the City the user is searching
+let city;
+app.post("/api/search-city", (req, res) => {
+  city = req.body.city;
+  res.redirect("/api/weather");
+});
+
+// Make the GET request with the city (that it's the redirect from the user)
+
+app.get("/api/weather", cors(), async (req, res) => {
+    city = req.query.city;
+     const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${process.env.API_KEY}`;
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      console.log(data);
+      res.send(data);
+    } catch (err) {
+      console.error("Fetch error: ", err);
+    }
+  });
 
 // console.log that your server is up and running
 app.listen(PORT, () => {
